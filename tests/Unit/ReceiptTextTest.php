@@ -6,7 +6,7 @@ use App\Models\Sale;
 use App\Models\SaleLine;
 use App\Support\ReceiptText;
 use Illuminate\Support\Carbon;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class ReceiptTextTest extends TestCase
 {
