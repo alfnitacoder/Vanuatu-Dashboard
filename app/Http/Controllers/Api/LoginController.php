@@ -16,6 +16,7 @@ class LoginController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
+            'device' => ['nullable', 'string', 'max:64'],
         ]);
 
         $user = User::query()->where('email', $credentials['email'])->first();
@@ -26,10 +27,12 @@ class LoginController extends Controller
             ]);
         }
 
-        $token = $user->createToken('android')->plainTextToken;
+        $device = $credentials['device'] ?? 'android';
+        $token = $user->createToken('shop-device:'.$device)->plainTextToken;
 
         return response()->json([
             'token' => $token,
+            'token_type' => 'shop_device',
             'shop' => $user->shop->toApiArray(),
         ]);
     }

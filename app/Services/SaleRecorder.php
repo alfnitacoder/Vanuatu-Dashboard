@@ -6,6 +6,7 @@ use App\Models\Sale;
 use App\Models\Shop;
 use App\Models\User;
 use App\Support\ReceiptText;
+use App\Support\Tender;
 use App\Support\Vat;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -15,10 +16,24 @@ final class SaleRecorder
     /**
      * @param  list<array{name?: string|null, qty: int, unit_price_vuv: int}>  $lines
      */
-    public function record(Shop $shop, User $user, array $lines, string $tender, ?int $tenderedVuv = null): Sale
-    {
-        return DB::transaction(function () use ($shop, $user, $lines, $tender, $tenderedVuv) {
+    public function record(
+        Shop $shop,
+        User $user,
+        array $lines,
+        string $tender,
+        string $clientSaleId,
+        ?int $tenderedVuv = null,
+    ): Sale {
+        return DB::transaction(function () use ($shop, $user, $lines, $tender, $clientSaleId, $tenderedVuv) {
             $shop = Shop::query()->lockForUpdate()->findOrFail($shop->id);
+
+            $existing = $shop->sales()
+                ->where('client_sale_id', $clientSaleId)
+                ->with('lines')
+                ->first();
+            if ($existing !== null) {
+                return $existing;
+            }
 
             $prepared = [];
             $total = 0;
@@ -36,8 +51,14 @@ final class SaleRecorder
             }
 
             $split = Vat::split($total);
+            $isCash = $tender === Tender::CASH;
             $tendered = $tenderedVuv ?? $total;
-            if ($tendered < $total) {
+            if ($isCash && $tenderedVuv === null) {
+                throw ValidationException::withMessages([
+                    'tendered_vuv' => 'Tendered amount is required for cash.',
+                ]);
+            }
+            if ($isCash && $tendered < $total) {
                 throw ValidationException::withMessages([
                     'tendered_vuv' => 'Tendered amount must cover the inclusive total.',
                 ]);
@@ -48,11 +69,12 @@ final class SaleRecorder
 
             $sale = $shop->sales()->create([
                 'user_id' => $user->id,
+                'client_sale_id' => $clientSaleId,
                 'number' => $next,
                 'receipt_no' => $receiptNo,
                 'tender' => $tender,
                 'tendered_vuv' => $tendered,
-                'change_vuv' => $tendered - $total,
+                'change_vuv' => $isCash ? $tendered - $total : 0,
                 'subtotal' => $split['subtotal'],
                 'vat' => $split['vat'],
                 'total' => $split['total'],

@@ -43,6 +43,7 @@ class WebDashboardTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)->post('/sales', [
+            'client_sale_id' => 'web-sale-1',
             'lines' => [
                 ['name' => 'Rice', 'qty' => 1, 'unit_price_vuv' => 2000],
                 ['qty' => 1, 'unit_price_vuv' => 800],

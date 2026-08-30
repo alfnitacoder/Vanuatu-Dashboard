@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shop_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('client_sale_id');
             $table->unsignedInteger('number');
             $table->string('receipt_no');
             $table->string('tender', 16);
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['shop_id', 'number']);
+            $table->unique(['shop_id', 'client_sale_id']);
             $table->index(['shop_id', 'created_at']);
         });
 

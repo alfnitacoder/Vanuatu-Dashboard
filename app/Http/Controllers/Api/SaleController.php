@@ -7,6 +7,7 @@ use App\Http\Requests\StoreSaleRequest;
 use App\Models\Sale;
 use App\Services\SaleRecorder;
 use App\Support\ReceiptPdf;
+use App\Support\Tender;
 use App\Support\Vat;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -24,10 +25,15 @@ class SaleController extends Controller
             $user,
             $request->lines(),
             $request->validated('tender'),
+            $request->validated('client_sale_id'),
             $request->validated('tendered_vuv'),
         );
 
-        return response()->json($sale->toApiArray(), SymfonyResponse::HTTP_CREATED);
+        $status = $sale->wasRecentlyCreated
+            ? SymfonyResponse::HTTP_CREATED
+            : SymfonyResponse::HTTP_OK;
+
+        return response()->json($sale->toApiArray(), $status);
     }
 
     public function index(Request $request): JsonResponse
@@ -44,6 +50,10 @@ class SaleController extends Controller
 
         $gross = (int) $sales->sum('total');
         $vat = Vat::extract($gross);
+        $tenders = [];
+        foreach (Tender::values() as $tender) {
+            $tenders[$tender] = (int) $sales->where('tender', $tender)->sum('total');
+        }
 
         return response()->json([
             'date' => $date->toDateString(),
@@ -53,6 +63,12 @@ class SaleController extends Controller
                 'subtotal' => $gross - $vat,
                 'vat' => $vat,
                 'total' => $gross,
+            ],
+            'day' => [
+                'gross' => $gross,
+                'vat' => $vat,
+                'net' => $gross - $vat,
+                'tenders' => $tenders,
             ],
         ]);
     }

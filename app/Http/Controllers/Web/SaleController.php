@@ -27,6 +27,7 @@ class SaleController extends Controller
             $user,
             $request->lines(),
             $request->validated('tender'),
+            $request->validated('client_sale_id'),
             $request->validated('tendered_vuv'),
         );
 

@@ -15,6 +15,7 @@
 
         <form method="post" action="{{ route('sales.store') }}" id="sale-form" class="panel">
             @csrf
+            <input type="hidden" name="client_sale_id" id="client_sale_id" value="{{ old('client_sale_id', (string) \Illuminate\Support\Str::uuid()) }}">
             @if ($errors->any())
                 <ul class="error-list">
                     @foreach ($errors->all() as $error)
@@ -52,7 +53,7 @@
             </fieldset>
 
             <label class="tendered">
-                Tendered VUV <span class="opt">(optional — default exact)</span>
+                Tendered VUV <span class="opt">(required for Cash / Kas)</span>
                 <input type="number" name="tendered_vuv" id="tendered" min="0" step="1">
             </label>
 
@@ -101,7 +102,15 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('sale-form').addEventListener('input', recalc);
+        function syncTenderedRequired() {
+            const cash = document.querySelector('input[name="tender"]:checked')?.value === 'cash';
+            document.getElementById('tendered').required = cash;
+        }
+        document.getElementById('sale-form').addEventListener('input', () => {
+            syncTenderedRequired();
+            recalc();
+        });
+        syncTenderedRequired();
         recalc();
     </script>
 @endsection

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'shop_id',
     'user_id',
+    'client_sale_id',
     'number',
     'receipt_no',
     'tender',
@@ -53,13 +54,16 @@ class Sale extends Model
     {
         return [
             'id' => $this->id,
+            'client_sale_id' => $this->client_sale_id,
             'receipt_no' => $this->receipt_no,
             'number' => $this->number,
             'tender' => $this->tender,
             'tendered_vuv' => $this->tendered_vuv,
             'change_vuv' => $this->change_vuv,
             'subtotal' => $this->subtotal,
+            'net' => $this->subtotal,
             'vat' => $this->vat,
+            'vat_vuv' => $this->vat,
             'total' => $this->total,
             'receipt_text' => $this->receipt_text,
             'created_at' => $this->created_at?->timezone('Pacific/Efate')->toIso8601String(),
