@@ -24,21 +24,21 @@ Layout mocks may show round numbers (e.g. Gross 186300 / VAT 24300 / Net 162000)
 
 ## Receipt
 
-Primary receipt is **SMS-readable plain text** on the sale as `receipt_text` (speech-bubble / paste into an SMS). Integers only. Item lines, then TOTAL, then a VAT note — VAT is **not** a fourth item and does **not** add into total.
+Primary receipt is **SMS-readable plain text** on the sale as `receipt_text` (speech-bubble / paste into an SMS). Integers only. Item lines, then TOTAL, then an extracted VAT note — VAT is **not** a fourth item and is **not** added into total.
 
 ```
 STUA #142
-2000
-800
-650
-TOTAL 3450 VUV
-VAT incl. 450
+2400
+150
+680
+TOTAL 3230 VUV
+VAT included 421
 Kas 4000
-Senis 550
+Senis 770
 30 Aug 10:42
 ```
 
-Demo check: `2400 + 150 + 680 => total 3230`, `vat_vuv 421` (not 3715 / 485).
+Demo check: `2400 + 150 + 680 => total 3230`, `vat_vuv 421` (not exclusive 3715 / 485).
 
 PDF is extra (`GET .../receipt.pdf`). Web UI labels it **PDF later**.
 
@@ -158,7 +158,7 @@ First write `201`. Replay of the same `client_sale_id` `200` with the original s
   "vat": 450,
   "vat_vuv": 450,
   "total": 3450,
-  "receipt_text": "STUA #1\n2000\n800\n650\nTOTAL 3450 VUV\nVAT incl. 450\nKas 4000\nSenis 550\n30 Aug 10:42",
+  "receipt_text": "STUA #1\n2000\n800\n650\nTOTAL 3450 VUV\nVAT included 450\nKas 4000\nSenis 550\n30 Aug 10:42",
   "created_at": "2026-08-30T10:42:00+11:00",
   "lines": [
     { "name": "Rice", "qty": 1, "unit_price_vuv": 2000, "line_total_vuv": 2000 }

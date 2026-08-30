@@ -57,10 +57,37 @@ class ApiSaleTest extends TestCase
             ->assertJsonPath('receipt_no', 'INV-0001');
 
         $text = $response->json('receipt_text');
-        $this->assertStringContainsString("TOTAL 3450 VUV\nVAT incl. 450", $text);
+        $this->assertStringContainsString("TOTAL 3450 VUV\nVAT included 450", $text);
         $this->assertStringContainsString('Kas 4000', $text);
         $this->assertStringContainsString('Senis 550', $text);
         $this->assertMatchesRegularExpression('/^STUA #1\n2000\n800\n650\n/', $text);
+    }
+
+    public function test_inclusive_demo_2400_150_680_is_not_exclusive_3715(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/v1/sales', [
+            'client_sale_id' => 'demo-3230',
+            'lines' => [
+                ['qty' => 1, 'unit_price_vuv' => 2400],
+                ['qty' => 1, 'unit_price_vuv' => 150],
+                ['qty' => 1, 'unit_price_vuv' => 680],
+            ],
+            'tender' => 'cash',
+            'tendered_vuv' => 4000,
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('total', 3230)
+            ->assertJsonPath('vat_vuv', 421)
+            ->assertJsonPath('net', 2809)
+            ->assertJsonPath('change_vuv', 770);
+
+        $text = $response->json('receipt_text');
+        $this->assertStringContainsString("2400\n150\n680\nTOTAL 3230 VUV\nVAT included 421", $text);
+        $this->assertStringNotContainsString('3715', $text);
+        $this->assertStringNotContainsString('485', $text);
     }
 
     public function test_cash_requires_tendered_amount(): void

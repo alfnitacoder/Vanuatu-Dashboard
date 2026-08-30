@@ -12,11 +12,14 @@ use Carbon\CarbonInterface;
  * 2000
  * 800
  * 650
- * TOTAL 3450 VUV
- * VAT incl. 450
+ * TOTAL 3230 VUV
+ * VAT included 421
  * Kas 4000
- * Senis 550
+ * Senis 770
  * 30 Aug 10:42
+ *
+ * VAT is an extracted note under TOTAL. It is not a fourth item and
+ * is not added into total.
  */
 final class ReceiptText
 {
@@ -29,7 +32,7 @@ final class ReceiptText
         }
 
         $lines[] = 'TOTAL '.$sale->total.' VUV';
-        $lines[] = 'VAT incl. '.$sale->vat;
+        $lines[] = 'VAT included '.$sale->vat;
 
         $tendered = $sale->tendered_vuv ?? $sale->total;
         $change = $tendered - $sale->total;

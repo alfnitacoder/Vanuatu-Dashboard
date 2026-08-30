@@ -21,10 +21,13 @@ class VatTest extends TestCase
         $this->assertSame(3000, $split['subtotal']);
     }
 
-    public function test_does_not_use_exclusive_add_on(): void
+    public function test_demo_2400_150_680_is_extracted_not_added(): void
     {
-        $this->assertNotSame((int) round(3230 * 15 / 100), Vat::extract(3230));
+        $this->assertSame(3230, 2400 + 150 + 680);
         $this->assertSame(421, Vat::extract(3230));
+        $this->assertSame(2809, 3230 - 421);
+        $this->assertNotSame(3715, 3230 + Vat::extract(3230));
+        $this->assertNotSame(485, Vat::extract(3230));
     }
 
     public function test_exact_115_is_15_vat(): void
